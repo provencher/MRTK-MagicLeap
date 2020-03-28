@@ -1,0 +1,17 @@
+{
+    "name": "MRTK-MagicLeap",
+    "references": [
+        "GUID:28d8685fae23c21419ef42894cb9b075"
+    ],
+    "includePlatforms": [
+        "Lumin"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
