@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cf5b356e131a944286fec26d7c40b4e, type: 3}
   m_Name: MagicLeapManifestSettings
   m_EditorClassIdentifier: 
-  m_MinimumAPILevel: 6
+  m_MinimumAPILevel: 8
   m_Privileges:
   - name: LowLatencyLightwear
     enabled: 1
@@ -71,10 +71,36 @@ MonoBehaviour:
   - name: AudioRecognizer
     enabled: 0
   - name: CameraCapture
-    enabled: 0
+    enabled: 1
   - name: CoarseLocation
     enabled: 0
   - name: ComputerVision
     enabled: 0
   - name: VoiceInput
+    enabled: 0
+  - name: AddressBookBasicAccess
+    enabled: 1
+  - name: BluetoothAdapterExternalApp
+    enabled: 1
+  - name: BluetoothAdapterUser
+    enabled: 1
+  - name: BluetoothGattWrite
+    enabled: 1
+  - name: ConnectionAccess
+    enabled: 1
+  - name: DesktopCompanion
+    enabled: 1
+  - name: SocialConnectionsInvitesAccess
+    enabled: 1
+  - name: SocialConnectionsSelectAccess
+    enabled: 1
+  - name: Expressions
+    enabled: 0
+  - name: ObjectData
+    enabled: 0
+  - name: ConnectionAudioCaptureStreaming
+    enabled: 0
+  - name: ConnectionVideoCaptureStreaming
+    enabled: 0
+  - name: FineLocation
     enabled: 0

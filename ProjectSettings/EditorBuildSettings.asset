@@ -9,5 +9,7 @@ EditorBuildSettings:
     path: Assets/MixedRealityToolkit.ThirdParty/MRTK-MagicLeap.Examples/Scenes/HandInteractionExamples.unity
     guid: 8b3789f8860a4b54d9a78353852da39a
   m_configObjects:
+    com.unity.xr.magicleap.magic_leap_settings: {fileID: 11400000, guid: 23b8cd022325b7b4a99e6c97e638e8f1,
+      type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 03b223e00916d1047937593bf4bfe831,
       type: 2}
