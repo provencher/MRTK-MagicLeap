@@ -51,7 +51,7 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
     /// Manages Magic Leap Device
     /// </summary>
     [MixedRealityDataProvider(typeof(IMixedRealityInputSystem), SupportedPlatforms.Lumin, "Magic Leap Device Manager")]
-    public class MagicLeapDeviceManager : XRSDKDeviceManager
+    public class MagicLeapDeviceManager : BaseInputDeviceManager, IMixedRealityCapabilityCheck
     {
         private Dictionary<Handedness, Input.MagicLeapHand> trackedHands = new Dictionary<Handedness, Input.MagicLeapHand>();
 
@@ -173,7 +173,7 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
         }
 
         /// <inheritdoc />
-        public override bool CheckCapability(MixedRealityCapability capability)
+        public bool CheckCapability(MixedRealityCapability capability)
         {
             return (capability == MixedRealityCapability.ArticulatedHand);
         }

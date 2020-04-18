@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/MagicLeap-Tools/Examples/HandInput/Scenes/HandInput.unity
-    guid: 9e59737e64d9ab541a216be82a696541
+    path: Assets/MixedRealityToolkit.ThirdParty/MRTK-MagicLeap.Examples/Scenes/HandInteractionExamples.unity
+    guid: 8b3789f8860a4b54d9a78353852da39a
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 03b223e00916d1047937593bf4bfe831,
       type: 2}
