@@ -26,6 +26,8 @@
 //SOFTWARE.
 //------------------------------------------------------------------------------ -
 
+// Note code inspired from both MRTK-Quest & Magic Leap Toolkit
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,6 +41,7 @@ using Microsoft.MixedReality.Toolkit.XRSDK.Input;
 using Microsoft.MixedReality.Toolkit;
 
 #if PLATFORM_LUMIN
+using MagicLeapTools;
 using UnityEngine.XR.MagicLeap;
 #endif
 
@@ -92,7 +95,7 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
 
         public override void Disable()
         {
-            DiscardHandInput();
+            RemoveAllHandDevices();
             StopMLInput();
         }
 
@@ -101,13 +104,35 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
             return trackedHands.Values.ToArray<IMixedRealityController>();
         }
 
-        private void DiscardHandInput()
+        private void RemoveHandDevice(Handedness handedness)
         {
-            foreach (var hand in trackedHands)
+            if (trackedHands.TryGetValue(handedness, out Input.MagicLeapHand hand))
             {
-                RecyclePointers(hand.Value.InputSource);
+                RemoveHandDevice(hand);
+            }
+        }
+
+        private void RemoveAllHandDevices()
+        {
+            if (trackedHands.Count == 0) return;
+
+            // Create a new list to avoid causing an error removing items from a list currently being iterated on.
+            foreach (var hand in new List<Input.MagicLeapHand>(trackedHands.Values))
+            {
+                RemoveHandDevice(hand);
             }
             trackedHands.Clear();
+        }
+
+        private void RemoveHandDevice(Input.MagicLeapHand hand)
+        {
+            if (hand == null) return;
+
+            hand.CleanupHand();
+            CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
+            trackedHands.Remove(hand.ControllerHandedness);
+
+            RecyclePointers(hand.InputSource);
         }
 
 #if PLATFORM_LUMIN
@@ -137,6 +162,8 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
 
         private void StopMLInput()
         {
+            RemoveAllHandDevices();
+
             //turn off hand tracking:
             if (MLHandTracking.IsStarted)
             {
@@ -192,9 +219,7 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
             var inputSource = inputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Hand", pointers, inputSourceType);
 
             var controller = new Input.MagicLeapHand(TrackingState.Tracked, handedness, inputSource);
-
-            // Code is obsolete later on, but older MRTK versions require it.
-            controller.SetupConfiguration(typeof(Input.MagicLeapHand));
+            controller.Initalize(new ManagedHand(mlHand, null));
 
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
             {
@@ -208,44 +233,6 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
             return controller;
         }
 
-        private void RemoveHandDevice(Handedness handedness)
-        {
-            if (trackedHands.TryGetValue(handedness, out Input.MagicLeapHand hand))
-            {
-                RemoveHandDevice(hand);
-            }
-        }
-
-        private void RemoveAllHandDevices()
-        {
-            if (trackedHands.Count == 0) return;
-
-            // Create a new list to avoid causing an error removing items from a list currently being iterated on.
-            foreach (var hand in new List<Input.MagicLeapHand>(trackedHands.Values))
-            {
-                RemoveHandDevice(hand);
-            }
-            trackedHands.Clear();
-        }
-
-        private void RemoveHandDevice(Input.MagicLeapHand hand)
-        {
-            if (hand == null) return;
-
-            hand.CleanupHand();
-            CoreServices.InputSystem?.RaiseSourceLost(hand.InputSource, hand);
-            trackedHands.Remove(hand.ControllerHandedness);
-
-            // Recycle pointers makes this loop obsolete. If you are using an MRTK version older than 2.3, please use the loop and comment out RecyclePointers.
-            /*
-            foreach (IMixedRealityPointer pointer in hand.InputSource.Pointers)
-            {
-                if (pointer == null) continue;
-                pointer.Controller = null;
-            }
-            */
-            RecyclePointers(hand.InputSource);
-        }
         #endregion
 #else
         private void StartMLInput()

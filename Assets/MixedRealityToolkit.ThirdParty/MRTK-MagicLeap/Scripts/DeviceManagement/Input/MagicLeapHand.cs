@@ -26,38 +26,264 @@
 //SOFTWARE.
 //------------------------------------------------------------------------------ -
 
+using System.Collections.Generic;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
-using Microsoft.MixedReality.Toolkit.XRSDK.WindowsMixedReality;
+using UnityEngine;
+using UnityEngine.XR.MagicLeap;
+
+#if PLATFORM_LUMIN
+using MagicLeapTools;
+#endif
 
 namespace prvncher.MRTK_MagicLeap.DeviceManagement.Input
 {
     public class MagicLeapHand : BaseHand, IMixedRealityHand
     {
+        public const float shoulderWidth = 0.37465f;
+        public const float shoulderDistanceBelowHead = 0.2159f;
+
+        private MixedRealityPose currentPointerPose = MixedRealityPose.ZeroIdentity;
+        private MixedRealityPose currentIndexPose = MixedRealityPose.ZeroIdentity;
+        private MixedRealityPose currentGripPose = MixedRealityPose.ZeroIdentity;
+
+        public bool IsPinching { get; private set; } = false;
+
+        protected readonly Dictionary<TrackedHandJoint, MixedRealityPose> jointPoses = new Dictionary<TrackedHandJoint, MixedRealityPose>();
+
         public MagicLeapHand(TrackingState trackingState, Handedness controllerHandedness, IMixedRealityInputSource inputSource = null, MixedRealityInteractionMapping[] interactions = null) : base(trackingState, controllerHandedness, inputSource, interactions)
         {
         }
+
         public override bool TryGetJoint(TrackedHandJoint joint, out MixedRealityPose pose)
         {
-            throw new System.NotImplementedException();
+            if (jointPoses.TryGetValue(joint, out pose))
+            {
+                return true;
+            }
+            pose = MixedRealityPose.ZeroIdentity;
+            return false;
         }
 
-#if PLATFORM_LUMIN
-        private void Initalize()
+        public override MixedRealityInteractionMapping[] DefaultInteractions => new[]
         {
+            new MixedRealityInteractionMapping(0, "Spatial Pointer", AxisType.SixDof, DeviceInputType.SpatialPointer, new MixedRealityInputAction(4, "Pointer Pose", AxisType.SixDof)),
+            new MixedRealityInteractionMapping(1, "Spatial Grip", AxisType.SixDof, DeviceInputType.SpatialGrip, new MixedRealityInputAction(3, "Grip Pose", AxisType.SixDof)),
+            new MixedRealityInteractionMapping(2, "Select", AxisType.Digital, DeviceInputType.Select, new MixedRealityInputAction(1, "Select", AxisType.Digital)),
+            new MixedRealityInteractionMapping(3, "Grab", AxisType.SingleAxis, DeviceInputType.TriggerPress, new MixedRealityInputAction(7, "Grip Press", AxisType.SingleAxis)),
+            new MixedRealityInteractionMapping(4, "Index Finger Pose", AxisType.SixDof, DeviceInputType.IndexFinger,  new MixedRealityInputAction(13, "Index Finger Pose", AxisType.SixDof)),
+        };
 
+#if PLATFORM_LUMIN
+        protected ManagedHand managedHand = null;
+
+        public void Initalize(ManagedHand newManagedHand)
+        {
+            managedHand = newManagedHand;
+            if (managedHand != null)
+            {
+                newManagedHand.Gesture.OnIntentChanged += HandleIntent;
+            }
         }
 
         public void CleanupHand()
         {
+            if (managedHand != null)
+            {
+                managedHand.Gesture.OnIntentChanged -= HandleIntent;
+            }
+        }
 
+        // Taken from 
+        // MagicLeap-Tools\Code\Input\InputDrivers\SimpleHandInputDriver.cs
+        private void HandleIntent(ManagedHand hand, IntentPose pose)
+        {
+            //grab:
+            if (pose == IntentPose.Grasping || pose == IntentPose.Pinching)
+            {
+                IsPinching = true;
+            }
+
+            //release:
+            if (pose == IntentPose.Relaxed)
+            {
+                IsPinching = false;
+            }
         }
 
         public void DoUpdate()
         {
+            if (!Enabled || managedHand == null) return;
 
+            managedHand.Update();
+
+            UpdateHandData(managedHand.Skeleton);
+
+            IsPositionAvailable = IsRotationAvailable = managedHand.Visible;
+
+            if (IsPositionAvailable)
+            {
+                UpdateHandRay(managedHand.Skeleton);
+
+                currentGripPose = jointPoses[TrackedHandJoint.Palm];
+                CoreServices.InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
+            }
+
+            for (int i = 0; i < Interactions?.Length; i++)
+            {
+                switch (Interactions[i].InputType)
+                {
+                    case DeviceInputType.SpatialPointer:
+                        Interactions[i].PoseData = currentPointerPose;
+                        if (Interactions[i].Changed)
+                        {
+                            CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction, currentPointerPose);
+                        }
+                        break;
+                    case DeviceInputType.SpatialGrip:
+                        Interactions[i].PoseData = currentGripPose;
+                        if (Interactions[i].Changed)
+                        {
+                            CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction, currentGripPose);
+                        }
+                        break;
+                    case DeviceInputType.Select:
+                        Interactions[i].BoolData = IsPinching;
+
+                        if (Interactions[i].Changed)
+                        {
+                            if (Interactions[i].BoolData)
+                            {
+                                CoreServices.InputSystem?.RaiseOnInputDown(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
+                            }
+                            else
+                            {
+                                CoreServices.InputSystem?.RaiseOnInputUp(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
+                            }
+                        }
+                        break;
+                    case DeviceInputType.TriggerPress:
+                        Interactions[i].BoolData = IsPinching;
+
+                        if (Interactions[i].Changed)
+                        {
+                            if (Interactions[i].BoolData)
+                            {
+                                CoreServices.InputSystem?.RaiseOnInputDown(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
+                            }
+                            else
+                            {
+                                CoreServices.InputSystem?.RaiseOnInputUp(InputSource, ControllerHandedness, Interactions[i].MixedRealityInputAction);
+                            }
+                        }
+                        break;
+                    case DeviceInputType.IndexFinger:
+                        UpdateIndexFingerData(Interactions[i]);
+                        break;
+                }
+            }
         }
+
+        protected void UpdateHandRay(ManagedHandSkeleton hand)
+        {
+            //shoulder:
+            float shoulderDistance = shoulderWidth * .5f;
+
+            //swap for the left shoulder:
+            if (ControllerHandedness == Handedness.Left)
+            {
+                shoulderDistance *= -1;
+            }
+
+            Transform camera = CameraCache.Main.transform;
+
+            //source locations:
+            Vector3 flatForward = Vector3.ProjectOnPlane(camera.forward, Vector3.up);
+            Vector3 shoulder = TransformUtilities.WorldPosition(camera.position, Quaternion.LookRotation(flatForward), new Vector2(shoulderDistance, Mathf.Abs(shoulderDistanceBelowHead) * -1));
+
+            Vector3 pointerOrigin = Vector3.Lerp(hand.Thumb.Knuckle.positionFiltered, hand.Position, .5f);
+
+            //direction:
+            Quaternion orientation = Quaternion.LookRotation(Vector3.Normalize(pointerOrigin - shoulder), hand.Rotation * Vector3.up);
+
+            currentPointerPose.Position = pointerOrigin;
+            currentPointerPose.Rotation = orientation;
+        }
+
+        // Magic Leap conversion code inspired by the work of Tarukosu
+        // https://github.com/HoloLabInc/MRTKExtensionForMagicLeap/blob/master/Assets/MixedRealityToolkit.ThirdParty/MagicLeapInput/Scripts/MagicLeapHand.cs
+        // Combined with usage of Magic Leap Toolkit
+        protected void UpdateHandData(ManagedHandSkeleton hand)
+        {
+            // Update joint positions
+            var pinky = hand.Pinky;
+            ConvertMagicLeapKeyPoint(pinky.Tip, TrackedHandJoint.PinkyTip);
+            ConvertMagicLeapKeyPoint(pinky.Joint, TrackedHandJoint.MiddleMiddleJoint);
+            ConvertMagicLeapKeyPoint(pinky.Knuckle, TrackedHandJoint.PinkyKnuckle);
+
+            var ring = hand.Ring;
+            ConvertMagicLeapKeyPoint(ring.Tip, TrackedHandJoint.RingTip);
+            ConvertMagicLeapKeyPoint(ring.Joint, TrackedHandJoint.RingMiddleJoint);
+            ConvertMagicLeapKeyPoint(ring.Knuckle, TrackedHandJoint.RingKnuckle);
+
+            var middle = hand.Middle;
+            ConvertMagicLeapKeyPoint(middle.Tip, TrackedHandJoint.MiddleTip);
+            ConvertMagicLeapKeyPoint(middle.Joint, TrackedHandJoint.MiddleMiddleJoint);
+            ConvertMagicLeapKeyPoint(middle.Knuckle, TrackedHandJoint.MiddleKnuckle);
+
+            var index = hand.Index;
+            ConvertMagicLeapKeyPoint(index.Tip, TrackedHandJoint.IndexTip);
+            ConvertMagicLeapKeyPoint(index.Joint, TrackedHandJoint.IndexMiddleJoint);
+            ConvertMagicLeapKeyPoint(index.Knuckle, TrackedHandJoint.IndexKnuckle);
+
+            var thumb = hand.Thumb;
+            ConvertMagicLeapKeyPoint(thumb.Tip, TrackedHandJoint.ThumbTip);
+            ConvertMagicLeapKeyPoint(thumb.Joint, TrackedHandJoint.ThumbDistalJoint);
+            ConvertMagicLeapKeyPoint(thumb.Knuckle, TrackedHandJoint.ThumbProximalJoint);
+
+            ConvertMagicLeapKeyPoint(hand.WristCenter, TrackedHandJoint.Wrist);
+            ConvertMagicLeapKeyPoint(hand.HandCenter, TrackedHandJoint.Palm);
+
+            CoreServices.InputSystem?.RaiseHandJointsUpdated(InputSource, ControllerHandedness, jointPoses);
+        }
+
+        protected void ConvertMagicLeapKeyPoint(ManagedKeypoint keyPoint, TrackedHandJoint joint)
+        {
+            UpdateJointPose(joint, keyPoint.GetPosition(FilterType.Filtered), keyPoint.Rotation);
+        }
+
+        protected void UpdateJointPose(TrackedHandJoint joint, Vector3 position, Quaternion rotation)
+        {
+            var pose = new MixedRealityPose(position, rotation);
+            if (!jointPoses.ContainsKey(joint))
+            {
+                jointPoses.Add(joint, pose);
+            }
+            else
+            {
+                jointPoses[joint] = pose;
+            }
+        }
+
+        private void UpdateIndexFingerData(MixedRealityInteractionMapping interactionMapping)
+        {
+            if (jointPoses.TryGetValue(TrackedHandJoint.IndexTip, out var pose))
+            {
+                currentIndexPose.Rotation = pose.Rotation;
+                currentIndexPose.Position = pose.Position;
+            }
+
+            interactionMapping.PoseData = currentIndexPose;
+
+            // If our value changed raise it.
+            if (interactionMapping.Changed)
+            {
+                // Raise input system Event if it enabled
+                CoreServices.InputSystem?.RaisePoseInputChanged(InputSource, ControllerHandedness, interactionMapping.MixedRealityInputAction, currentIndexPose);
+            }
+        }
+
 #endif // PLATFORM_LUMIN
 
     }

@@ -36,7 +36,7 @@ namespace MagicLeapTools
             get;
             private set;
         }
-        
+
         public MLHandTracking.Hand Hand
         {
             get;
@@ -48,7 +48,7 @@ namespace MagicLeapTools
             get;
             private set;
         }
-        
+
         //Private Variables:
         private HandInput _handInput;
 
@@ -59,7 +59,12 @@ namespace MagicLeapTools
             Hand = hand;
             Skeleton = new ManagedHandSkeleton(this);
             Gesture = new ManagedHandGesture(this);
-            Collider = new ManagedHandCollider(this);
+
+            // Modified here by prnvcher to not explode if using null hand input
+            if (handInput != null && handInput.palmCollisions)
+            {
+                Collider = new ManagedHandCollider(this);
+            }
         }
 
         //Public Methods:
@@ -79,7 +84,12 @@ namespace MagicLeapTools
 
             Skeleton.Update();
             Gesture.Update();
-            Collider.Update(_handInput.palmCollisions);
+
+            // Modified here by prnvcher to not explode if using null hand input
+            if (_handInput != null)
+            {
+                Collider?.Update(_handInput.palmCollisions);
+            }
         }
 #endif
     }
