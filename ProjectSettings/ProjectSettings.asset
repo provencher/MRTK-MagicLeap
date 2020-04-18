@@ -542,6 +542,7 @@ PlayerSettings:
   ps4UseResolutionFallback: 0
   ps4ReprojectionSupport: 0
   ps4UseAudio3dBackend: 0
+  ps4UseLowGarlicFragmentationMode: 1
   ps4SocialScreenEnabled: 0
   ps4ScriptOptimizationLevel: 0
   ps4Audio3dVirtualSpeakerCount: 14
@@ -580,7 +581,10 @@ PlayerSettings:
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
   webGLWasmStreaming: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    4: 
+    7: 
+    14: 
   platformArchitecture: {}
   scriptingBackend: {}
   il2cppCompilerConfiguration: {}

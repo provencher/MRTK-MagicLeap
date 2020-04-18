@@ -1,0 +1,179 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7599050699442747582
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3711491077353356965}
+  - component: {fileID: 4006321171478279076}
+  m_Layer: 0
+  m_Name: Transmission
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3711491077353356965
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7599050699442747582}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4006321171478279076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7599050699442747582}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1acab6330f349a0449376de50fbb3c94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pcf: {fileID: 0}
+  port: 23000
+  bufferSize: 1024
+  appKey: 
+  privateKey: 
+  rpcTargets: []
+  sharedOrigin:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 0}
+  debugOutgoing: 0
+  debugIncoming: 0
+  OnPeerFound:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPeerLost:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSendMessageFailure:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSendMessageSuccess:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalStringChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalBoolsReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalBoolChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalStringsReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalFloatChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalFloatsReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalVector2Changed:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalVector2sReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalVector3Changed:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalVector3sReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalVector4Changed:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGlobalVector4sReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnOwnershipLost:
+    m_PersistentCalls:
+      m_Calls: []
+  OnOwnershipGained:
+    m_PersistentCalls:
+      m_Calls: []
+  OnOwnershipTransferDenied:
+    m_PersistentCalls:
+      m_Calls: []
+  OnBoolMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnBoolArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnByteArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnColorMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnColorArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnFloatMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnFloatArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPoseMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPoseArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnQuaternionMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnQuaternionArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStringMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStringArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnVector2Message:
+    m_PersistentCalls:
+      m_Calls: []
+  OnVector2ArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnVector3Message:
+    m_PersistentCalls:
+      m_Calls: []
+  OnVector3ArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnVector4Message:
+    m_PersistentCalls:
+      m_Calls: []
+  OnVector4ArrayMessage:
+    m_PersistentCalls:
+      m_Calls: []
+  OnOldestPeerUpdated:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSharedOriginUpdated:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTransformSync:
+    m_PersistentCalls:
+      m_Calls: []
