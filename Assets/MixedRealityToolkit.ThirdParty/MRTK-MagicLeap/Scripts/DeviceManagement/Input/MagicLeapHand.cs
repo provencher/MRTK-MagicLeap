@@ -56,6 +56,21 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement.Input
         {
         }
 
+        public override bool IsInPointingPose
+        {
+            get
+            {
+                if (!TryGetJoint(TrackedHandJoint.Palm, out var palmPose)) return false;
+
+                Transform cameraTransform = CameraCache.Main.transform;
+
+                Vector3 projectedPalmUp = Vector3.ProjectOnPlane(-palmPose.Up, cameraTransform.up);
+
+                // We check if the palm forward is roughly in line with the camera lookAt
+                return Vector3.Dot(cameraTransform.forward, projectedPalmUp) > 0.3f;
+            }
+        }
+
         public override bool TryGetJoint(TrackedHandJoint joint, out MixedRealityPose pose)
         {
             if (jointPoses.TryGetValue(joint, out pose))
@@ -81,35 +96,10 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement.Input
         public void Initalize(ManagedHand newManagedHand)
         {
             managedHand = newManagedHand;
-            if (managedHand != null)
-            {
-                newManagedHand.Gesture.OnIntentChanged += HandleIntent;
-            }
         }
 
         public void CleanupHand()
         {
-            if (managedHand != null)
-            {
-                managedHand.Gesture.OnIntentChanged -= HandleIntent;
-            }
-        }
-
-        // Taken from 
-        // MagicLeap-Tools\Code\Input\InputDrivers\SimpleHandInputDriver.cs
-        private void HandleIntent(ManagedHand hand, IntentPose pose)
-        {
-            //grab:
-            if (pose == IntentPose.Grasping || pose == IntentPose.Pinching)
-            {
-                IsPinching = true;
-            }
-
-            //release:
-            if (pose == IntentPose.Relaxed)
-            {
-                IsPinching = false;
-            }
         }
 
         public void DoUpdate()
@@ -117,14 +107,16 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement.Input
             if (!Enabled || managedHand == null) return;
 
             managedHand.Update();
-
-            UpdateHandData(managedHand.Skeleton);
+            IntentPose pose = managedHand.Gesture.Intent;
+            IsPinching = (pose == IntentPose.Grasping || pose == IntentPose.Pinching);
 
             IsPositionAvailable = IsRotationAvailable = managedHand.Visible;
 
             if (IsPositionAvailable)
             {
+                UpdateHandData(managedHand.Skeleton);
                 UpdateHandRay(managedHand.Skeleton);
+                UpdateVelocity();
 
                 currentGripPose = jointPoses[TrackedHandJoint.Palm];
                 CoreServices.InputSystem?.RaiseSourcePoseChanged(InputSource, this, currentGripPose);
@@ -219,12 +211,10 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement.Input
             // Update joint positions
             var pinky = hand.Pinky;
             ConvertMagicLeapKeyPoint(pinky.Tip, TrackedHandJoint.PinkyTip);
-            ConvertMagicLeapKeyPoint(pinky.Joint, TrackedHandJoint.MiddleMiddleJoint);
             ConvertMagicLeapKeyPoint(pinky.Knuckle, TrackedHandJoint.PinkyKnuckle);
 
             var ring = hand.Ring;
             ConvertMagicLeapKeyPoint(ring.Tip, TrackedHandJoint.RingTip);
-            ConvertMagicLeapKeyPoint(ring.Joint, TrackedHandJoint.RingMiddleJoint);
             ConvertMagicLeapKeyPoint(ring.Knuckle, TrackedHandJoint.RingKnuckle);
 
             var middle = hand.Middle;
@@ -250,6 +240,7 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement.Input
 
         protected void ConvertMagicLeapKeyPoint(ManagedKeypoint keyPoint, TrackedHandJoint joint)
         {
+            if(keyPoint == null) return;
             UpdateJointPose(joint, keyPoint.GetPosition(FilterType.Filtered), keyPoint.Rotation);
         }
 

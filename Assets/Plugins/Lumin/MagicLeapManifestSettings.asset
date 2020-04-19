@@ -45,7 +45,7 @@ MonoBehaviour:
   - name: NormalNotificationsUsage
     enabled: 1
   - name: Occlusion
-    enabled: 0
+    enabled: 1
   - name: PcfRead
     enabled: 1
   - name: PowerInfo

@@ -61,7 +61,7 @@ namespace MagicLeapTools
             Gesture = new ManagedHandGesture(this);
 
             // Modified here by prnvcher to not explode if using null hand input
-            if (handInput != null && handInput.palmCollisions)
+            if (handInput != null)
             {
                 Collider = new ManagedHandCollider(this);
             }

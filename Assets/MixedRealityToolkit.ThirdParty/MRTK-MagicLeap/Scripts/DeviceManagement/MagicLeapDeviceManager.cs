@@ -28,18 +28,13 @@
 
 // Note code inspired from both MRTK-Quest & Magic Leap Toolkit
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.XR;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
-using Microsoft.MixedReality.Toolkit.Windows.Utilities;
-using Microsoft.MixedReality.Toolkit.XRSDK.Input;
 using Microsoft.MixedReality.Toolkit;
-
+using Microsoft.MixedReality.Toolkit.XRSDK.Input;
 #if PLATFORM_LUMIN
 using MagicLeapTools;
 using UnityEngine.XR.MagicLeap;
@@ -51,7 +46,7 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
     /// Manages Magic Leap Device
     /// </summary>
     [MixedRealityDataProvider(typeof(IMixedRealityInputSystem), SupportedPlatforms.Lumin, "Magic Leap Device Manager")]
-    public class MagicLeapDeviceManager : BaseInputDeviceManager, IMixedRealityCapabilityCheck
+    public class MagicLeapDeviceManager : XRSDKDeviceManager
     {
         private Dictionary<Handedness, Input.MagicLeapHand> trackedHands = new Dictionary<Handedness, Input.MagicLeapHand>();
 
@@ -89,8 +84,10 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
         public override void Update()
         {
             // Ensure input is active
-            StartMLInput();
-            UpdateHands();
+            if (StartMLInput())
+            {
+                UpdateHands();
+            }
         }
 
         public override void Disable()
@@ -135,29 +132,32 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
             RecyclePointers(hand.InputSource);
         }
 
-#if PLATFORM_LUMIN
-        private void StartMLInput()
+        /// <inheritdoc />
+        public override bool CheckCapability(MixedRealityCapability capability)
         {
-            if (IsReady) return;
+            return (capability == MixedRealityCapability.ArticulatedHand);
+        }
 
-            // Turn on inputs:
+#if PLATFORM_LUMIN
+        private bool StartMLInput()
+        {
             if (!MLHandTracking.IsStarted)
             {
                 if (!MLHandTracking.Start().IsOk)
                 {
                     Debug.LogError("Failed to initialize ML Hand Tracking");
-                    return;
                 }
                 else
                 {
                     MLHandTracking.KeyPoseManager.SetKeyPointsFilterLevel(MLHandTracking.KeyPointFilterLevel.Smoothed);
+                    MLHandTracking.KeyPoseManager.EnableKeyPoses(supportedGestures, true, false);
                 }
+                return false;
             }
-
-            // Setup hand tracking and supported gestures
-            MLHandTracking.KeyPoseManager.EnableKeyPoses(supportedGestures, true, false);
-
-            IsReady = true;
+            else
+            {
+                return true;
+            }
         }
 
         private void StopMLInput()
@@ -172,21 +172,9 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
             IsReady = false;
         }
 
-        /// <inheritdoc />
-        public bool CheckCapability(MixedRealityCapability capability)
-        {
-            return (capability == MixedRealityCapability.ArticulatedHand);
-        }
-
         #region Hand Management
         protected void UpdateHands()
         {
-            //avoid MLHands start failures:
-            if (!IsReady)
-            {
-                return;
-            }
-
             UpdateHand(MLHandTracking.Right, Handedness.Right);
             UpdateHand(MLHandTracking.Left, Handedness.Left);
         }
@@ -216,10 +204,11 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
             var inputSourceType = InputSourceType.Hand;
 
             IMixedRealityInputSystem inputSystem = Service as IMixedRealityInputSystem;
-            var inputSource = inputSystem?.RequestNewGenericInputSource($"Oculus Quest {handedness} Hand", pointers, inputSourceType);
+            var inputSource = inputSystem?.RequestNewGenericInputSource($"Magic Leap {handedness} Hand", pointers, inputSourceType);
 
             var controller = new Input.MagicLeapHand(TrackingState.Tracked, handedness, inputSource);
             controller.Initalize(new ManagedHand(mlHand, null));
+            controller.SetupConfiguration(typeof(Input.MagicLeapHand));
 
             for (int i = 0; i < controller.InputSource?.Pointers?.Length; i++)
             {
@@ -235,8 +224,9 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement
 
         #endregion
 #else
-        private void StartMLInput()
+        private bool StartMLInput()
         {
+            return false;
         }
 
         private void StopMLInput()
