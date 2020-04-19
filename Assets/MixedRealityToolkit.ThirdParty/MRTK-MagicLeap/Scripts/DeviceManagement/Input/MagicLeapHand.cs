@@ -232,8 +232,9 @@ namespace prvncher.MRTK_MagicLeap.DeviceManagement.Input
             ConvertMagicLeapKeyPoint(thumb.Joint, TrackedHandJoint.ThumbDistalJoint);
             ConvertMagicLeapKeyPoint(thumb.Knuckle, TrackedHandJoint.ThumbProximalJoint);
 
-            ConvertMagicLeapKeyPoint(hand.WristCenter, TrackedHandJoint.Wrist);
-            ConvertMagicLeapKeyPoint(hand.HandCenter, TrackedHandJoint.Palm);
+            // Wrist and palm reference hand skeleton rotation directly
+            UpdateJointPose(TrackedHandJoint.Palm, hand.HandCenter.GetPosition(FilterType.Filtered), hand.Rotation);
+            UpdateJointPose(TrackedHandJoint.Wrist, hand.WristCenter.GetPosition(FilterType.Filtered), hand.Rotation);
 
             CoreServices.InputSystem?.RaiseHandJointsUpdated(InputSource, ControllerHandedness, jointPoses);
         }
