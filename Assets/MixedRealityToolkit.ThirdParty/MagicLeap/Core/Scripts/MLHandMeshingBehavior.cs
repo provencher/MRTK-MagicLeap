@@ -20,7 +20,7 @@ namespace UnityEngine.XR.MagicLeap
     [AddComponentMenu("XR/MagicLeap/MLHandMeshingBehavior")]
     public class MLHandMeshingBehavior : MonoBehaviour
     {
-        #if PLATFORM_LUMIN
+#if PLATFORM_LUMIN
         /// <summary>
         /// Triggered when mesh data is found
         /// </summary>
@@ -35,7 +35,7 @@ namespace UnityEngine.XR.MagicLeap
         /// Triggered when mesh data is lost
         /// </summary>
         public event MLHandMeshing.RequestHandMeshCallback OnHandMeshLost = delegate { };
-        #endif
+#endif
 
         [SerializeField, Tooltip("A Prefab with a Mesh Filter and Mesh Renderer")]
         private GameObject _meshBlockPrefab = null;
@@ -43,12 +43,12 @@ namespace UnityEngine.XR.MagicLeap
         [SerializeField, Tooltip("Material applied on the mesh")]
         private Material _meshMaterial = null;
 
-        #pragma warning disable 414
+#pragma warning disable 414
         [SerializeField, Tooltip("Recalculate normals")]
         private bool _recalculateNormals = false;
 
         private bool _hasPendingRequest = false;
-        #pragma warning restore 414
+#pragma warning restore 414
 
         private List<MeshFilter> _meshFilters = new List<MeshFilter>();
 
@@ -77,7 +77,7 @@ namespace UnityEngine.XR.MagicLeap
         /// </summary>
         void Start()
         {
-            #if PLATFORM_LUMIN
+#if PLATFORM_LUMIN && !UNITY_EDITOR
             MLResult result = MLHandMeshing.Start();
             if (!result.IsOk)
             {
@@ -85,7 +85,7 @@ namespace UnityEngine.XR.MagicLeap
                 enabled = false;
                 return;
             }
-            #endif
+#endif
 
             if (_meshBlockPrefab == null)
             {
@@ -103,9 +103,9 @@ namespace UnityEngine.XR.MagicLeap
 
             HandMeshFound = false;
 
-            #if PLATFORM_LUMIN
+#if PLATFORM_LUMIN && !UNITY_EDITOR
             MLHandMeshing.RequestHandMesh(HandMeshRequestCallback);
-            #endif
+#endif
 
             _hasPendingRequest = true;
         }
@@ -115,13 +115,13 @@ namespace UnityEngine.XR.MagicLeap
         /// </summary>
         void OnDestroy()
         {
-            #if PLATFORM_LUMIN
+#if PLATFORM_LUMIN && !UNITY_EDITOR
             if (MLHandMeshing.IsStarted)
             {
                 // Stop() cancels all hand mesh requests
                 MLHandMeshing.Stop();
             }
-            #endif
+#endif
         }
 
         /// <summary>
@@ -129,17 +129,17 @@ namespace UnityEngine.XR.MagicLeap
         /// </summary>
         void OnEnable()
         {
-            #if PLATFORM_LUMIN
+#if PLATFORM_LUMIN && !UNITY_EDITOR
             // resume mesh requesting
             if (!_hasPendingRequest && MLHandMeshing.IsStarted)
             {
                 MLHandMeshing.RequestHandMesh(HandMeshRequestCallback);
                 _hasPendingRequest = true;
             }
-            #endif
+#endif
         }
 
-        #if PLATFORM_LUMIN
+#if PLATFORM_LUMIN
         /// <summary>
         /// Invoke callbacks.
         /// </summary>
@@ -163,7 +163,7 @@ namespace UnityEngine.XR.MagicLeap
                 {
                     if (OnHandMeshLost != null)
                     {
-                        OnHandMeshLost(result,meshData);
+                        OnHandMeshLost(result, meshData);
                     }
                     HandMeshFound = false;
                 }
@@ -175,14 +175,14 @@ namespace UnityEngine.XR.MagicLeap
                 {
                     if (OnHandMeshUpdated != null)
                     {
-                        OnHandMeshUpdated(result,meshData);
+                        OnHandMeshUpdated(result, meshData);
                     }
                 }
                 else
                 {
                     if (OnHandMeshFound != null)
                     {
-                        OnHandMeshFound(result,meshData);
+                        OnHandMeshFound(result, meshData);
                     }
                     HandMeshFound = true;
                 }
@@ -240,7 +240,7 @@ namespace UnityEngine.XR.MagicLeap
                 _meshFilters[j].gameObject.SetActive(false);
             }
 
-            HandleCallbacks(result,meshData);
+            HandleCallbacks(result, meshData);
 
             if (enabled)
             {
@@ -248,6 +248,6 @@ namespace UnityEngine.XR.MagicLeap
                 _hasPendingRequest = true;
             }
         }
-        #endif
+#endif
     }
 }
