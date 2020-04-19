@@ -5,6 +5,12 @@ This is a basic MRTK extension built to bridge Magic Leap's hand tracking code, 
 
 Right now, feature wise, it is a bit bare, and not all Magic Leap functionality is exposed via the MRTK.
 
+## Enviornment
+- Unity 2019.3.9f1
+- Development version of MRTK
+- MLSDK 24.1
+- Latest version of magic leap toolkit-unity
+
 ## What works:
 - Head pose
 - Hand Tracking (with palm rotations!)
