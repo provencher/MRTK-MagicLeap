@@ -37994,8 +37994,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'This MRTK extension for Oculus showcases how both hand tracking and controllers
-    can be used to interact with any and all of the MRTK''s hand interaction library.
+  m_text: 'This MRTK extension for Magic Leap showcases how hand tracking can be
+    used to interact with any and all of the MRTK''s hand interaction library.
 
 '
   m_isRightToLeft: 0
@@ -38067,10 +38067,10 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 3.7210658}
   m_textInfo:
     textComponent: {fileID: 2045784225}
-    characterCount: 161
+    characterCount: 144
     spriteCount: 0
-    spaceCount: 27
-    wordCount: 27
+    spaceCount: 25
+    wordCount: 25
     linkCount: 0
     lineCount: 3
     pageCount: 1
