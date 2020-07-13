@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Magic Leap Settings
   m_EditorClassIdentifier: 
   m_DepthPrecision: 0
-  m_ForceMultipass: 1
-  m_FrameTimingHint: 3
+  m_ForceMultipass: 0
+  m_FrameTimingHint: 2
   m_GLCacheSettings:
     m_Enabled: 0
     m_MaxBlobSizeInBytes: 0
